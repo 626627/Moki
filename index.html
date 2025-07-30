@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moki</title>
+    <link rel="stylesheet" href="bounce-pig.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h1 class="bounce-title">莫琪是猪</h1>
+
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <!-- 弹弓 -->
+            <div class="slingshot" id="slingshot">
+                <div class="slingshot-left"></div>
+                <div class="slingshot-right"></div>
+                <div class="slingshot-band" id="slingshotBand"></div>
+            </div>
+
+            <!-- 复位按钮 -->
+            <button class="reset-button" id="resetButton">
+                <span class="reset-icon">🔄</span>
+                <span class="reset-text">复位</span>
+            </button>
+
+            <!-- 轨迹预测线 -->
+            <svg class="trajectory" id="trajectory">
+                <path id="trajectoryPath" stroke="#ff6b9d" stroke-width="3" fill="none" stroke-dasharray="10,5"
+                    opacity="0.7"></path>
+            </svg>
+
+            <!-- 猪猪 -->
+            <div class="pig-container" id="pigContainer">
+                <div class="pig" id="pig">
+                    <div class="pig-body">
+                        <div class="pig-face">
+                            <div class="eyes">
+                                <div class="eye left-eye">
+                                    <div class="pupil"></div>
+                                    <div class="eyelid"></div>
+                                </div>
+                                <div class="eye right-eye">
+                                    <div class="pupil"></div>
+                                    <div class="eyelid"></div>
+                                </div>
+                            </div>
+                            <div class="nose">
+                                <div class="nostril left-nostril"></div>
+                                <div class="nostril right-nostril"></div>
+                            </div>
+                            <div class="mouth">
+                                <div class="mouth-curve"></div>
+                            </div>
+                            <div class="cheeks">
+                                <div class="cheek left-cheek"></div>
+                                <div class="cheek right-cheek"></div>
+                            </div>
+                        </div>
+                        <div class="ears">
+                            <div class="ear left-ear">
+                                <div class="ear-inner"></div>
+                            </div>
+                            <div class="ear right-ear">
+                                <div class="ear-inner"></div>
+                            </div>
+                        </div>
+                        <div class="body-shine"></div>
+                    </div>
+                    <div class="tail">
+                        <div class="tail-curl"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 特效容器 -->
+            <div class="effects" id="effects"></div>
+        </div>
+
+        <div class="ui">
+
+        </div>
+
+        <!-- 粒子效果容器 -->
+        <div class="particles" id="particles"></div>
+    </div>
+
+    <script src="bounce-pig.js"></script>
+</body>
+
+</html>
