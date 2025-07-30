@@ -1,0 +1,576 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 30%, #B0E0E6 100%);
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="white" opacity="0.3"/><circle cx="80" cy="40" r="1.5" fill="white" opacity="0.4"/><circle cx="40" cy="70" r="1" fill="white" opacity="0.5"/></svg>');
+    animation: cloudFloat 20s linear infinite;
+    pointer-events: none;
+}
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+.title {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 100;
+}
+
+.bounce-title {
+    font-size: 3rem;
+    color: #ff6b9d;
+    text-shadow: 3px 3px 0px #fff, 6px 6px 0px #ff9a9e;
+    animation: titleFloat 3s ease-in-out infinite;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #ff6b9d;
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+.game-area {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 弹弓 */
+.slingshot {
+    position: absolute;
+    left: 100px;
+    bottom: 150px;
+    width: 60px;
+    height: 120px;
+    z-index: 10;
+}
+
+.slingshot-left, .slingshot-right {
+    position: absolute;
+    width: 8px;
+    height: 100px;
+    background: linear-gradient(to bottom, #8B4513 0%, #A0522D 50%, #8B4513 100%);
+    border-radius: 4px;
+    box-shadow: inset 2px 0 4px rgba(0,0,0,0.3);
+}
+
+.slingshot-left {
+    left: 10px;
+    transform: rotate(-10deg);
+    transform-origin: bottom;
+}
+
+.slingshot-right {
+    right: 10px;
+    transform: rotate(10deg);
+    transform-origin: bottom;
+}
+
+.slingshot-band {
+    position: absolute;
+    top: 20px;
+    left: 18px;
+    width: 24px;
+    height: 3px;
+    background: #654321;
+    border-radius: 2px;
+    transform-origin: center;
+    transition: all 0.1s ease;
+}
+
+/* 复位按钮 */
+.reset-button {
+    position: absolute;
+    left: 100px;
+    bottom: 20px;
+    width: 60px;
+    height: 40px;
+    background: linear-gradient(135deg, #ff6b9d, #ff8cc8);
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-shadow: 
+        0 4px 8px rgba(255, 107, 157, 0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+    z-index: 15;
+    font-family: 'Arial', sans-serif;
+}
+
+.reset-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 12px rgba(255, 107, 157, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    background: linear-gradient(135deg, #ff8cc8, #ffb3d9);
+}
+
+.reset-button:active {
+    transform: translateY(0px);
+    box-shadow: 
+        0 2px 4px rgba(255, 107, 157, 0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+.reset-icon {
+    font-size: 16px;
+    animation: resetSpin 2s linear infinite paused;
+}
+
+.reset-button:hover .reset-icon {
+    animation-play-state: running;
+}
+
+.reset-text {
+    font-size: 10px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 轨迹预测 */
+.trajectory {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* 猪猪容器 */
+.pig-container {
+    position: absolute;
+    left: 130px;
+    bottom: 200px;
+    transition: none;
+    z-index: 50;
+}
+
+.pig {
+    position: relative;
+    cursor: grab;
+    transform-origin: center center;
+    transition: transform 0.1s ease;
+}
+
+.pig:active {
+    cursor: grabbing;
+}
+
+.pig.dragging {
+    z-index: 100;
+    transform: scale(1.1);
+}
+
+.pig.flying {
+    cursor: default;
+    animation: pigSpin 0.8s linear infinite;
+}
+
+/* 精致的猪猪设计 */
+.pig-body {
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(ellipse at 30% 30%, #ffcce5, #ffb3d9, #ff99cc);
+    border-radius: 50%;
+    position: relative;
+    border: 2px solid #ff8cc8;
+    box-shadow: 
+        inset -5px -5px 10px rgba(255, 140, 200, 0.3),
+        inset 5px 5px 10px rgba(255, 255, 255, 0.5),
+        0 5px 15px rgba(255, 107, 157, 0.3);
+    animation: breathe 3s ease-in-out infinite;
+}
+
+.body-shine {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    width: 25px;
+    height: 20px;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.6), transparent);
+    border-radius: 50%;
+    animation: shineMove 4s ease-in-out infinite;
+}
+
+.pig-face {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.eyes {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 8px;
+    justify-content: center;
+}
+
+.eye {
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle at 30% 30%, #fff, #f0f0f0);
+    border-radius: 50%;
+    position: relative;
+    border: 1px solid #ddd;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.pupil {
+    width: 6px;
+    height: 6px;
+    background: radial-gradient(circle at 30% 30%, #333, #000);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease;
+}
+
+.eyelid {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 18px;
+    height: 9px;
+    background: #ffb3d9;
+    border-radius: 50% 50% 0 0;
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.2s ease;
+}
+
+.nose {
+    width: 12px;
+    height: 8px;
+    background: radial-gradient(ellipse, #ff6b9d, #e91e63);
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.nostril {
+    position: absolute;
+    width: 2px;
+    height: 3px;
+    background: #d63384;
+    border-radius: 50%;
+    top: 2px;
+}
+
+.left-nostril {
+    left: 3px;
+}
+
+.right-nostril {
+    right: 3px;
+}
+
+.mouth {
+    width: 16px;
+    height: 8px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.mouth-curve {
+    width: 16px;
+    height: 8px;
+    border: 2px solid #ff6b9d;
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    background: rgba(255, 107, 157, 0.1);
+}
+
+.cheeks {
+    position: absolute;
+    top: 8px;
+    width: 100%;
+}
+
+.cheek {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, rgba(255, 182, 193, 0.6), transparent);
+    border-radius: 50%;
+}
+
+.left-cheek {
+    left: -5px;
+}
+
+.right-cheek {
+    right: -5px;
+}
+
+.ears {
+    position: absolute;
+    top: -8px;
+    width: 100%;
+}
+
+.ear {
+    width: 16px;
+    height: 20px;
+    background: radial-gradient(ellipse at 30% 30%, #ffcce5, #ffb3d9);
+    border: 2px solid #ff8cc8;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    position: absolute;
+    animation: earFlap 3s infinite;
+    box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.5);
+}
+
+.ear-inner {
+    position: absolute;
+    top: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 10px;
+    background: #ff99cc;
+    border-radius: 50%;
+}
+
+.left-ear {
+    left: 12px;
+    transform: rotate(-15deg);
+}
+
+.right-ear {
+    right: 12px;
+    transform: rotate(15deg);
+}
+
+.tail {
+    position: absolute;
+    right: -8px;
+    top: 30px;
+    width: 16px;
+    height: 16px;
+    z-index: -1;
+}
+
+.tail-curl {
+    width: 16px;
+    height: 16px;
+    border: 3px solid #ff8cc8;
+    border-radius: 50%;
+    border-left: none;
+    border-bottom: none;
+    transform: rotate(45deg);
+    animation: tailWag 2s infinite;
+    background: radial-gradient(ellipse at 30% 30%, rgba(255, 204, 229, 0.5), transparent);
+}
+
+/* UI元素 */
+.ui {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+}
+
+
+
+
+
+.effects {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 30;
+}
+
+.particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 40;
+}
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* 特效 */
+.impact-effect {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 107, 157, 0.6) 50%, transparent 100%);
+    animation: impactExpand 0.6s ease-out forwards;
+    pointer-events: none;
+}
+
+.trail-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #ff6b9d;
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: trailFade 0.5s ease-out forwards;
+}
+
+/* 动画定义 */
+@keyframes cloudFloat {
+    0% { transform: translateX(-10px); }
+    100% { transform: translateX(10px); }
+}
+
+@keyframes titleFloat {
+    0%, 100% { transform: translateX(-50%) translateY(0px); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+@keyframes shineMove {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(5px, -3px); }
+}
+
+@keyframes earFlap {
+    0%, 100% { transform: rotate(-15deg); }
+    50% { transform: rotate(-25deg); }
+}
+
+.right-ear {
+    animation-name: earFlapRight;
+}
+
+@keyframes earFlapRight {
+    0%, 100% { transform: rotate(15deg); }
+    50% { transform: rotate(25deg); }
+}
+
+@keyframes tailWag {
+    0%, 100% { transform: rotate(45deg); }
+    25% { transform: rotate(35deg); }
+    75% { transform: rotate(55deg); }
+}
+
+@keyframes pigSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes impactExpand {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes trailFade {
+    0% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+}
+
+/* 眨眼动画 */
+.pig.blinking .eyelid {
+    transform: scaleY(1);
+}
+
+/* 复位按钮动画 */
+@keyframes resetSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .bounce-title {
+        font-size: 2rem;
+    }
+    
+    .pig-body {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .slingshot {
+        left: 50px;
+        bottom: 120px;
+    }
+    
+    .reset-button {
+        left: 50px;
+        bottom: 10px;
+        width: 50px;
+        height: 35px;
+    }
+    
+    .reset-text {
+        font-size: 8px;
+    }
+    
+    .pig-container {
+        left: 80px;
+        bottom: 160px;
+    }
+    
+    .ui {
+        bottom: 10px;
+        left: 10px;
+    }
+    
+    .instructions {
+        padding: 10px;
+    }
+}
